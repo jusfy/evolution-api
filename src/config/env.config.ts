@@ -782,6 +782,7 @@ export class ConfigService {
           TYPEBOT_CHANGE_STATUS: process.env?.WEBHOOK_EVENTS_TYPEBOT_CHANGE_STATUS === 'true',
           ERRORS: process.env?.WEBHOOK_EVENTS_ERRORS === 'true',
           ERRORS_WEBHOOK: process.env?.WEBHOOK_EVENTS_ERRORS_WEBHOOK || '',
+          HISTORY_SYNC_PROGRESS: process.env?.WEBHOOK_EVENTS_HISTORY_SYNC_PROGRESS === 'true',
         },
         REQUEST: {
           TIMEOUT_MS: Number.parseInt(process.env?.WEBHOOK_REQUEST_TIMEOUT_MS) || 30000,
