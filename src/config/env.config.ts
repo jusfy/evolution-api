@@ -223,6 +223,7 @@ export type EventsWebhook = {
   CALL: boolean;
   TYPEBOT_START: boolean;
   TYPEBOT_CHANGE_STATUS: boolean;
+  HISTORY_SYNC_PROGRESS: boolean;
   ERRORS: boolean;
   ERRORS_WEBHOOK: string;
 };

@@ -82,7 +82,7 @@ import { createId as cuid } from '@paralleldrive/cuid2';
 import { Instance, Message } from '@prisma/client';
 import { createJid } from '@utils/createJid';
 import { fetchLatestWaWebVersion } from '@utils/fetchLatestWaWebVersion';
-import {makeProxyAgent, makeProxyAgentUndici} from '@utils/makeProxyAgent';
+import { makeProxyAgent, makeProxyAgentUndici } from '@utils/makeProxyAgent';
 import { getOnWhatsappCache, saveOnWhatsappCache } from '@utils/onWhatsappCache';
 import { status } from '@utils/renderStatus';
 import { sendTelemetry } from '@utils/sendTelemetry';
@@ -919,8 +919,10 @@ export class BaileysStartupService extends ChannelStartupService {
         if (syncType === proto.HistorySync.HistorySyncType.ON_DEMAND) {
           console.log('received on-demand history sync, messages=', messages);
         }
-        console.log(
-          `recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest}, progress: ${progress}%), type: ${syncType}`,
+
+        this.logger.info(
+          `[MESSAGING_HISTORY_SET] Received ${chats.length} chats, ${contacts.length} contacts, ${messages.length} messages | ` +
+            `Latest: ${isLatest} | Progress: ${progress}% | Type: ${syncType}`,
         );
 
         const instance: InstanceDto = { instanceName: this.instance.name };
@@ -1043,6 +1045,43 @@ export class BaileysStartupService extends ChannelStartupService {
         await this.contactHandle['contacts.upsert'](
           contacts.filter((c) => !!c.notify || !!c.name).map((c) => ({ id: c.id, name: c.name ?? c.notify })),
         );
+
+        // Busca totais salvos no banco de dados
+        const totalChatsInDb = await this.prismaRepository.chat.count({
+          where: { instanceId: this.instanceId },
+        });
+
+        const totalContactsInDb = await this.prismaRepository.contact.count({
+          where: { instanceId: this.instanceId },
+        });
+
+        const totalMessagesInDb = await this.prismaRepository.message.count({
+          where: { instanceId: this.instanceId },
+        });
+
+        // Emite webhook com detalhes do sync APÓS salvar no banco
+        const historySyncData = {
+          chatsReceived: chats.length,
+          contactsReceived: contacts.length,
+          messagesReceived: messages.length,
+          chatsSaved: chatsRaw.length,
+          contactsSaved: contacts.filter((c) => !!c.notify || !!c.name).length,
+          messagesSaved: messagesRaw.length,
+          totalChatsInDatabase: totalChatsInDb,
+          totalContactsInDatabase: totalContactsInDb,
+          totalMessagesInDatabase: totalMessagesInDb,
+          isLatest: isLatest || false,
+          progress: progress || 0,
+          syncType: syncType || 0,
+        };
+
+        this.logger.info(
+          `[HISTORY_SYNC_PROGRESS] Saved ${historySyncData.chatsSaved} chats, ${historySyncData.contactsSaved} contacts, ${historySyncData.messagesSaved} messages | ` +
+            `Total in DB: ${totalChatsInDb} chats, ${totalContactsInDb} contacts, ${totalMessagesInDb} messages | ` +
+            `Progress: ${progress}% | Latest: ${isLatest}`,
+        );
+
+        this.sendDataWebhook(Events.HISTORY_SYNC_PROGRESS, historySyncData);
 
         contacts = undefined;
         messages = undefined;
