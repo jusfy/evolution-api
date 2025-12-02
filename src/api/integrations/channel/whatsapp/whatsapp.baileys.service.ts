@@ -1107,6 +1107,7 @@ export class BaileysStartupService extends ChannelStartupService {
                 'Invalid PreKey ID',
                 'No session record',
                 'No session found to decrypt message',
+                'Message absent from node',
               ].some((err) => param?.includes?.(err)),
             )
           ) {
