@@ -1,0 +1,249 @@
+version: "3.7"
+services:
+
+## --------------------------- ORION --------------------------- ##
+
+  evolution_api_test:
+    image: kwiiby/evo-jusfy:2.3.6
+
+    volumes:
+      - evolution_instances:/evolution/instances
+
+    networks:
+      - InternalNet
+
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-2              
+        awslogs-group: /evolution/cluster         
+        awslogs-stream: cluster-test
+        awslogs-create-group: "true"
+    
+    environment:
+      ## ⚙️ Configurações Gerais
+      - SERVER_URL=https://evo-test.evolutionapi.jusfy.dev
+      - AUTHENTICATION_API_KEY=evo_api_key
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - DEL_INSTANCE=false
+      - QRCODE_LIMIT=0
+      - LOG_COLOR=false
+      - LANGUAGE=pt-BR
+      - TZ=UTC
+
+      ## 📱 Configuração do Cliente
+      - CONFIG_SESSION_PHONE_CLIENT=Jusfy
+      - CONFIG_SESSION_PHONE_NAME=Chrome
+      
+      ## 🗄️ Configuração do Banco de Dados
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://user:pass@postgres:5432/evolution_db?schema=evolution_api&connection_limit=2&pool_timeout=30
+      - DATABASE_CONNECTION_CLIENT_NAME=evo_test
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - DATABASE_SAVE_DATA_LABELS=true
+      - DATABASE_SAVE_DATA_HISTORIC=true
+
+      ## 🤖 Integrações (mantém o que você quiser igual ao principal)
+      - N8N_ENABLED=true
+      - EVOAI_ENABLED=true
+      - OPENAI_ENABLED=true
+      - DIFY_ENABLED=true
+      - TYPEBOT_ENABLED=true
+      - TYPEBOT_API_VERSION=latest
+
+      ## 🗣️ Chatwoot
+      - CHATWOOT_ENABLED=false
+      - CHATWOOT_MESSAGE_READ=true
+      - CHATWOOT_MESSAGE_DELETE=true
+      - CHATWOOT_IMPORT_DATABASE_CONNECTION_URI=
+      - CHATWOOT_IMPORT_PLACEHOLDER_MEDIA_MESSAGE=false
+
+      ## 🧊 Cache
+      - CACHE_REDIS_ENABLED=true
+      - CACHE_REDIS_URI=redis://evolution_redis:6379/1
+      - CACHE_REDIS_PREFIX_KEY=evolution
+      - CACHE_REDIS_SAVE_INSTANCES=true
+      - CACHE_LOCAL_ENABLED=false
+
+      ## ☁️ S3 (igual ao principal)
+      - S3_ENABLED=false
+      - S3_ACCESS_KEY=
+      - S3_SECRET_KEY=
+      - S3_BUCKET=evolution
+      - S3_PORT=443
+      - S3_ENDPOINT=
+      - S3_USE_SSL=true
+
+      ## 💼 WhatsApp Business
+      - WA_BUSINESS_TOKEN_WEBHOOK=evolution
+      - WA_BUSINESS_URL=https://graph.facebook.com
+      - WA_BUSINESS_VERSION=v21.0
+      - WA_BUSINESS_LANGUAGE=pt_BR
+
+      ## 📊 Telemetria
+      - TELEMETRY=false
+      - TELEMETRY_URL=
+
+      ## 🌐 WebSocket
+      - WEBSOCKET_ENABLED=false
+      - WEBSOCKET_GLOBAL_EVENTS=false
+
+      ## 📨 SQS
+      - SQS_ENABLED=true
+      - SQS_ACCESS_KEY_ID=SQS_ACCESS_KEY_ID
+      - SQS_SECRET_ACCESS_KEY=SQS_SECRET_ACCESS_KEY
+      - SQS_ACCOUNT_ID=SQS_ACCOUNT_ID
+      - SQS_REGION=SQS_REGION
+
+      ## 🐇 RabbitMQ (igual)
+      - RABBITMQ_ENABLED=false
+      - RABBITMQ_FRAME_MAX=8192
+      - RABBITMQ_URI=amqp://USER:PASS@rabbitmq:5672/evolution
+      - RABBITMQ_EXCHANGE_NAME=evolution
+      - RABBITMQ_GLOBAL_ENABLED=false
+      - RABBITMQ_EVENTS_APPLICATION_STARTUP=false
+      - RABBITMQ_EVENTS_INSTANCE_CREATE=false
+      - RABBITMQ_EVENTS_INSTANCE_DELETE=false
+      - RABBITMQ_EVENTS_QRCODE_UPDATED=false
+      - RABBITMQ_EVENTS_SEND_MESSAGE_UPDATE=false
+      - RABBITMQ_EVENTS_MESSAGES_SET=false
+      - RABBITMQ_EVENTS_MESSAGES_UPSERT=true
+      - RABBITMQ_EVENTS_MESSAGES_EDITED=false
+      - RABBITMQ_EVENTS_MESSAGES_UPDATE=false
+      - RABBITMQ_EVENTS_MESSAGES_DELETE=false
+      - RABBITMQ_EVENTS_SEND_MESSAGE=false
+      - RABBITMQ_EVENTS_CONTACTS_SET=false
+      - RABBITMQ_EVENTS_CONTACTS_UPSERT=false
+      - RABBITMQ_EVENTS_CONTACTS_UPDATE=false
+      - RABBITMQ_EVENTS_PRESENCE_UPDATE=false
+      - RABBITMQ_EVENTS_CHATS_SET=false
+      - RABBITMQ_EVENTS_CHATS_UPSERT=false
+      - RABBITMQ_EVENTS_CHATS_UPDATE=false
+      - RABBITMQ_EVENTS_CHATS_DELETE=false
+      - RABBITMQ_EVENTS_GROUPS_UPSERT=false
+      - RABBITMQ_EVENTS_GROUP_UPDATE=false
+      - RABBITMQ_EVENTS_GROUP_PARTICIPANTS_UPDATE=false
+      - RABBITMQ_EVENTS_CONNECTION_UPDATE=true
+      - RABBITMQ_EVENTS_CALL=false
+      - RABBITMQ_EVENTS_TYPEBOT_START=false
+      - RABBITMQ_EVENTS_TYPEBOT_CHANGE_STATUS=false
+
+      ## 🌐 Webhook (igual ao principal)
+      - WEBHOOK_GLOBAL_ENABLED=false
+      - WEBHOOK_GLOBAL_URL=
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
+      - WEBHOOK_EVENTS_APPLICATION_STARTUP=false
+      - WEBHOOK_EVENTS_QRCODE_UPDATED=false
+      - WEBHOOK_EVENTS_MESSAGES_SET=false
+      - WEBHOOK_EVENTS_SEND_MESSAGE_UPDATE=false
+      - WEBHOOK_EVENTS_MESSAGES_UPSERT=false
+      - WEBHOOK_EVENTS_MESSAGES_EDITED=false
+      - WEBHOOK_EVENTS_MESSAGES_UPDATE=false
+      - WEBHOOK_EVENTS_MESSAGES_DELETE=false
+      - WEBHOOK_EVENTS_SEND_MESSAGE=false
+      - WEBHOOK_EVENTS_CONTACTS_SET=false
+      - WEBHOOK_EVENTS_CONTACTS_UPSERT=false
+      - WEBHOOK_EVENTS_CONTACTS_UPDATE=false
+      - WEBHOOK_EVENTS_PRESENCE_UPDATE=false
+      - WEBHOOK_EVENTS_CHATS_SET=false
+      - WEBHOOK_EVENTS_CHATS_UPSERT=false
+      - WEBHOOK_EVENTS_CHATS_UPDATE=false
+      - WEBHOOK_EVENTS_CHATS_DELETE=false
+      - WEBHOOK_EVENTS_GROUPS_UPSERT=false
+      - WEBHOOK_EVENTS_GROUPS_UPDATE=false
+      - WEBHOOK_EVENTS_GROUP_PARTICIPANTS_UPDATE=false
+      - WEBHOOK_EVENTS_CONNECTION_UPDATE=false
+      - WEBHOOK_EVENTS_LABELS_EDIT=false
+      - WEBHOOK_EVENTS_LABELS_ASSOCIATION=false
+      - WEBHOOK_EVENTS_CALL=false
+      - WEBHOOK_EVENTS_TYPEBOT_START=false
+      - WEBHOOK_EVENTS_TYPEBOT_CHANGE_STATUS=false
+      - WEBHOOK_EVENTS_ERRORS=false
+      - WEBHOOK_EVENTS_ERRORS_WEBHOOK=
+      - WEBHOOK_EVENTS_HISTORY_SYNC_PROGRESS=true
+      - WEBHOOK_REQUEST_TIMEOUT_MS=60000
+      - WEBHOOK_RETRY_MAX_ATTEMPTS=10
+      - WEBHOOK_RETRY_INITIAL_DELAY_SECONDS=5
+      - WEBHOOK_RETRY_USE_EXPONENTIAL_BACKOFF=true
+      - WEBHOOK_RETRY_MAX_DELAY_SECONDS=300
+      - WEBHOOK_RETRY_JITTER_FACTOR=0.2
+      - WEBHOOK_RETRY_NON_RETRYABLE_STATUS_CODES=400,401,403,404,422
+
+      ## 🔌 Provider
+      - PROVIDER_ENABLED=false
+      - PROVIDER_HOST=127.0.0.1
+      - PROVIDER_PORT=5656
+      - PROVIDER_PREFIX=evolution-test
+      
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+
+      labels:
+        - traefik.enable=1
+        - traefik.http.routers.evolution-test.rule=Host(`evo-test.evolutionapi.jusfy.dev`)
+        - traefik.http.routers.evolution-test.entrypoints=websecure
+        - traefik.http.routers.evolution-test.priority=1
+        - traefik.http.routers.evolution-test.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.evolution-test.service=evolution-test
+        - traefik.http.services.evolution-test.loadbalancer.server.port=8080
+        - traefik.http.services.evolution-test.loadbalancer.passHostHeader=true
+
+
+## --------------------------- ORION --------------------------- ##
+
+  evolution_redis:
+    image: redis:latest  ## Versão do Redis
+    command: [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--port",
+        "6379"
+      ]
+
+    volumes:
+      - evolution_redis:/data
+
+    networks:
+      - InternalNet ## Nome da rede interna
+
+    ## Descomente as linhas abaixo para uso externo
+    #ports:
+    #  - 6379:6379
+
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1024M
+
+## --------------------------- ORION --------------------------- ##
+
+volumes:
+  evolution_instances:
+    external: true
+    name: evolution_instances
+  evolution_redis:
+    external: true
+    name: evolution_redis
+
+networks:
+  InternalNet: ## Nome da rede interna
+    external: true
+    name: InternalNet ## Nome da rede interna
